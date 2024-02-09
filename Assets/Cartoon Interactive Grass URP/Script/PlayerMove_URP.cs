@@ -16,7 +16,6 @@ namespace AppsTools.URP
 
         public Camera mainCam;
         public TextMeshProUGUI text;
-        public TextMeshProUGUI log;
 
         //TEST
         private void Awake()
@@ -42,17 +41,6 @@ namespace AppsTools.URP
                     
                     painter1.RemoveGrassAtPosition(removalTransform.position, removalRadius);
                 }
-            }
-
-            if (Input.GetKeyDown(KeyCode.Space))
-            {
-                UpdateStuff();
-                log.text = "pressed";
-            }
-
-            if (Input.GetKeyUp(KeyCode.Space))
-            {
-                log.text = "";
             }
 
             //TEST UPDATE
