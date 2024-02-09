@@ -17,15 +17,16 @@ namespace AppsTools.URP
         public Camera mainCam;
         public TextMeshProUGUI text;
 
+        public LevelMeshes meshes;
+
         //TEST
+        public Mesh currentMesh;
+
         private void Awake()
         {
             Instance = this;
-        }
-
-        private void OnEnable()
-        {
-            painter1.OnMeshUpdate += UpdateStuff;
+            currentMesh = new Mesh();
+            currentMesh = meshes.mesh;
         }
 
         void Update()
@@ -38,29 +39,21 @@ namespace AppsTools.URP
                 if (Physics.Raycast(ray, out hit, 100))
                 {
                     removalTransform.transform.position = hit.point;
-                    
+
                     painter1.RemoveGrassAtPosition(removalTransform.position, removalRadius);
+
+                    if (!painter1.AreVerticesEqual(painter1.mesh.vertexCount, painter1.verticesCount))
+                    {
+                        UpdateStuff();
+                        painter1.verticesCount = painter1.mesh.vertexCount;
+                    }
                 }
             }
-
-            //TEST UPDATE
-            if (Input.GetKeyDown(KeyCode.S))
-            {
-                ope1.enabled = false;
-                ope1.enabled = true;
-            }
-            
         }
 
         public void UpdateStuff()
         {
-            StartCoroutine(delayedUpdate());
-        }
-
-        //TEST DELAY???
-        private IEnumerator delayedUpdate()
-        {
-            yield return new WaitForSeconds(0.1f);
+            Debug.Log("UPDATING MESH");
             ope1.UpdateStuff();
         }
     }

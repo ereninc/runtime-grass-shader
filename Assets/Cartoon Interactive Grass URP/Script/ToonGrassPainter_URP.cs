@@ -55,7 +55,13 @@ public class ToonGrassPainter_URP : MonoBehaviour
     [HideInInspector] public Vector3 hitNormal;
     int[] indi;
 
-    
+    public int verticesCount;
+
+    private void Start()
+    {
+        verticesCount = mesh.vertexCount;
+    }
+
     //RUNTIME'DA EDITLEMEK ICIN EKLENDI
     public void RemoveGrassAtPosition(Vector3 position, float removalRadius)
     {
@@ -105,12 +111,17 @@ public class ToonGrassPainter_URP : MonoBehaviour
         mesh.SetNormals(normals);
         
         //Meshi guncelledikten sonra
-        filter.mesh = mesh;
+        PlayerMove_URP.Instance.currentMesh = mesh;
         
-        if (indicesToRemove.Count > 0)
-        {
-            OnMeshUpdate?.Invoke();
-        }
+        filter.mesh = mesh;
+    }
+    
+    public bool AreVerticesEqual(int vertices1, int vertices2)
+    {
+        if (vertices1 != vertices2)
+            return false;
+
+        return true;
     }
 
 #if UNITY_EDITOR

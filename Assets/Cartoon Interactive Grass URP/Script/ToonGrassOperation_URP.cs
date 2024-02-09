@@ -1,4 +1,5 @@
 using System;
+using AppsTools.URP;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEditor;
@@ -40,6 +41,8 @@ public class ToonGrassOperation_URP : MonoBehaviour
 
     [Header("Other")]
     public UnityEngine.Rendering.ShadowCastingMode castShadow;
+
+    public LevelMeshes meshes;
     
     private readonly int m_AllowedBladesPerVertex = 6;
     private readonly int m_AllowedSegmentsPerBlade = 7;
@@ -70,6 +73,11 @@ public class ToonGrassOperation_URP : MonoBehaviour
 
     private int[] argsBufferReset = new int[] { 0, 1, 0, 0 };
 
+    public Mesh GetMesh()
+    {
+        return GetComponent<MeshFilter>().sharedMesh;
+    }
+
 #if UNITY_EDITOR
     SceneView view;
 
@@ -94,9 +102,19 @@ public class ToonGrassOperation_URP : MonoBehaviour
     
     private void OnValidate()
     {
-        m_MainCamera = Camera.main;
-        grassPainter = GetComponent<ToonGrassPainter_URP>();
-        sourceMesh = GetComponent<MeshFilter>().sharedMesh;  
+        // m_MainCamera = Camera.main;
+        // grassPainter = GetComponent<ToonGrassPainter_URP>();
+        // sourceMesh = GetComponent<MeshFilter>().sharedMesh;  
+        //
+
+        if (Application.isPlaying)
+        {
+            if (PlayerMove_URP.Instance)
+            {
+                sourceMesh = PlayerMove_URP.Instance.currentMesh;
+            }
+        }
+        // GetComponent<MeshFilter>().sharedMesh = sourceMesh;
     }
 
     private void OnEnable()
@@ -109,13 +127,22 @@ public class ToonGrassOperation_URP : MonoBehaviour
 #if UNITY_EDITOR
         SceneView.duringSceneGui += this.OnScene;
 #endif
-        m_MainCamera = Camera.main;
+        // m_MainCamera = Camera.main;
 
         if (grassPainter == null || sourceMesh == null || computeShader == null || material == null)
         {
             return;
         }
-        sourceMesh = GetComponent<MeshFilter>().sharedMesh;
+        // sourceMesh = GetComponent<MeshFilter>().sharedMesh;
+        if (PlayerMove_URP.Instance)
+        {
+            sourceMesh = PlayerMove_URP.Instance.currentMesh;
+        }
+        else
+        {
+            sourceMesh = meshes.mesh;
+        }
+        GetComponent<MeshFilter>().sharedMesh = sourceMesh;
 
         if (sourceMesh.vertexCount == 0)
         {
