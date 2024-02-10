@@ -32,6 +32,8 @@ namespace AppsTools.URP
         public Color renk2;
         public Color renk3;
 
+        public ParticleSystem particleSystem;
+
 
         private Color MixColors(Color renkA, Color renkB, Color renkC)
         {
@@ -47,8 +49,12 @@ namespace AppsTools.URP
             Instance = this;
             currentMesh = new Mesh();
             currentMesh = meshes.mesh;
+
+            psRend = particleSystem.GetComponent<ParticleSystemRenderer>();
         }
 
+        private Color currentCol;
+        private ParticleSystemRenderer psRend;
         void Update()
         {
             if (Input.GetMouseButton(0))
@@ -66,8 +72,11 @@ namespace AppsTools.URP
                         UpdateStuff();
                         painter1.verticesCount = painter1.mesh.vertexCount;
 
-                        // image.color = MixColors(painter1.currentCutColor, renk2, renk3);
-                        image.color = painter1.currentCutColor;
+                        // image.color = 
+                        currentCol = MixColors(painter1.currentCutColor, renk2, renk3);
+                        psRend.sharedMaterial.color = currentCol;
+                        particleSystem.Play();
+                        // image.color = painter1.currentCutColor;
                     }
                 }
             }
