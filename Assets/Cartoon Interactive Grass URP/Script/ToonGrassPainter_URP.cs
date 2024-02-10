@@ -89,8 +89,8 @@ public class ToonGrassPainter_URP : MonoBehaviour
         foreach (int indexToRemove in indicesToRemove.OrderByDescending(i => i))
         {
             positions.RemoveAt(indexToRemove);
-            colors.RemoveAt(indexToRemove);
             currentCutColor = colors[indexToRemove];
+            colors.RemoveAt(indexToRemove);
             normals.RemoveAt(indexToRemove);
             length.RemoveAt(indexToRemove);
         }

@@ -72,11 +72,10 @@ namespace AppsTools.URP
                         UpdateStuff();
                         painter1.verticesCount = painter1.mesh.vertexCount;
 
-                        // image.color = 
+                        //Particles
                         currentCol = MixColors(painter1.currentCutColor, renk2, renk3);
                         psRend.sharedMaterial.color = currentCol;
                         particleSystem.Play();
-                        // image.color = painter1.currentCutColor;
                     }
                 }
             }
