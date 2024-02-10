@@ -13,6 +13,7 @@ public class ToonGrassOperation_URP : MonoBehaviour
     [SerializeField] private Material material = default;
     [SerializeField] private ComputeShader computeShader = default;
     [SerializeField] private Camera m_MainCamera;
+    [SerializeField] private MeshFilter meshFilter;
     
     [Header("Blade")]
     public float grassHeight = 1;
@@ -75,7 +76,7 @@ public class ToonGrassOperation_URP : MonoBehaviour
 
     public Mesh GetMesh()
     {
-        return GetComponent<MeshFilter>().sharedMesh;
+        return meshFilter.sharedMesh;
     }
 
 #if UNITY_EDITOR
@@ -105,7 +106,9 @@ public class ToonGrassOperation_URP : MonoBehaviour
         // m_MainCamera = Camera.main;
         // grassPainter = GetComponent<ToonGrassPainter_URP>();
         // sourceMesh = GetComponent<MeshFilter>().sharedMesh;  
-        //
+        
+
+        #region [ Ingame Mesh ]
 
         if (Application.isPlaying)
         {
@@ -114,12 +117,22 @@ public class ToonGrassOperation_URP : MonoBehaviour
                 sourceMesh = PlayerMove_URP.Instance.currentMesh;
             }
         }
+        
+        #endregion
+        
         // GetComponent<MeshFilter>().sharedMesh = sourceMesh;
     }
 
     private void OnEnable()
     {
         OnValidate();
+        if (grassPainter == null || sourceMesh == null || computeShader == null || material == null)
+        {
+            return;
+        }
+        
+        GetCameraPosition();
+        
         if (m_Initialized)
         {
             OnDisable();
@@ -129,11 +142,10 @@ public class ToonGrassOperation_URP : MonoBehaviour
 #endif
         // m_MainCamera = Camera.main;
 
-        if (grassPainter == null || sourceMesh == null || computeShader == null || material == null)
-        {
-            return;
-        }
         // sourceMesh = GetComponent<MeshFilter>().sharedMesh;
+
+        #region [ Updating Mesh ]
+        
         if (PlayerMove_URP.Instance)
         {
             sourceMesh = PlayerMove_URP.Instance.currentMesh;
@@ -142,7 +154,9 @@ public class ToonGrassOperation_URP : MonoBehaviour
         {
             sourceMesh = meshes.mesh;
         }
-        GetComponent<MeshFilter>().sharedMesh = sourceMesh;
+        meshFilter.sharedMesh = sourceMesh;
+
+        #endregion
 
         if (sourceMesh.vertexCount == 0)
         {
@@ -150,9 +164,9 @@ public class ToonGrassOperation_URP : MonoBehaviour
         }
 
         m_Initialized = true;
-
-        m_InstantiatedComputeShader = Instantiate(computeShader);
+        
         m_InstantiatedMaterial = Instantiate(material);
+        m_InstantiatedComputeShader = Instantiate(computeShader);
 
         Vector3[] positions = sourceMesh.vertices;
         Vector3[] normals = sourceMesh.normals;
@@ -219,7 +233,7 @@ public class ToonGrassOperation_URP : MonoBehaviour
     }
 
     //??? SADECE ON ENABLED'I CAGIRDIGIMIZDA MESH'I GUNCELLIYOR
-    public void UpdateStuff()
+    public void UpdateGrasses()
     {
         OnDisable();
         OnEnable();
@@ -301,17 +315,20 @@ public class ToonGrassOperation_URP : MonoBehaviour
     private void SetGrassDataUpdate()
     {
         m_InstantiatedComputeShader.SetFloat("_Time", Time.time);
+        m_InstantiatedComputeShader.SetVector("_CameraPositionWS", cameraPositionWS);
+    }
 
-
+    private Vector3 cameraPositionWS;
+    private void GetCameraPosition()
+    {
         if (m_MainCamera != null)
         {
-            m_InstantiatedComputeShader.SetVector("_CameraPositionWS", m_MainCamera.transform.position);
-
+            cameraPositionWS = m_MainCamera.transform.position;
         }
 #if UNITY_EDITOR
-        else if (view != null)
+        else if (view != null && view.camera != null)
         {
-            m_InstantiatedComputeShader.SetVector("_CameraPositionWS", view.camera.transform.position);
+            cameraPositionWS = view.camera.transform.position;
         }
 #endif
 

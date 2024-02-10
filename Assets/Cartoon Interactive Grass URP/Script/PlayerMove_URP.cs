@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace AppsTools.URP
 {
@@ -15,12 +16,31 @@ namespace AppsTools.URP
         public Transform removalTransform;
 
         public Camera mainCam;
-        public TextMeshProUGUI text;
 
         public LevelMeshes meshes;
 
+        public Image image;
+
         //TEST
         public Mesh currentMesh;
+
+        private RaycastHit _hit;
+        private Ray _ray;
+        
+        
+        public Color renk1;
+        public Color renk2;
+        public Color renk3;
+
+
+        private Color MixColors(Color renkA, Color renkB, Color renkC)
+        {
+            float karisikRed = (renkA.r + renkB.r + renkC.r) / 3f;
+            float karisikGreen = (renkA.g + renkB.g + renkC.g) / 3f;
+            float karisikBlue = (renkA.b + renkB.b + renkC.b) / 3f;
+
+            return new Color(karisikRed, karisikGreen, karisikBlue);
+        }
 
         private void Awake()
         {
@@ -33,12 +53,11 @@ namespace AppsTools.URP
         {
             if (Input.GetMouseButton(0))
             {
-                RaycastHit hit;
-                Ray ray = mainCam.ScreenPointToRay(Input.mousePosition);
-                Debug.DrawRay(this.transform.position, ray.direction);
-                if (Physics.Raycast(ray, out hit, 100))
+                _ray = mainCam.ScreenPointToRay(Input.mousePosition);
+                
+                if (Physics.Raycast(_ray, out _hit, 100))
                 {
-                    removalTransform.transform.position = hit.point;
+                    removalTransform.transform.position = _hit.point;
 
                     painter1.RemoveGrassAtPosition(removalTransform.position, removalRadius);
 
@@ -46,15 +65,17 @@ namespace AppsTools.URP
                     {
                         UpdateStuff();
                         painter1.verticesCount = painter1.mesh.vertexCount;
+
+                        // image.color = MixColors(painter1.currentCutColor, renk2, renk3);
+                        image.color = painter1.currentCutColor;
                     }
                 }
             }
         }
 
-        public void UpdateStuff()
+        private void UpdateStuff()
         {
-            Debug.Log("UPDATING MESH");
-            ope1.UpdateStuff();
+            ope1.UpdateGrasses();
         }
     }
 }

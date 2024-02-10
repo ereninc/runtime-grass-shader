@@ -18,8 +18,7 @@ public class ToonGrassPainter_URP : MonoBehaviour
     MeshFilter filter;
     public Color AdjustedColor;
 
-    [Range(1, 600000)] 
-    public int grassLimit = 50000;
+    [Range(1, 600000)] public int grassLimit = 50000;
 
     private Vector3 lastPosition = Vector3.zero;
 
@@ -38,7 +37,7 @@ public class ToonGrassPainter_URP : MonoBehaviour
     public float sizeWidth = 1f;
     public float sizeLength = 1f;
     public float density = 1f;
-    
+
     public float normalLimit = 1;
 
     public float rangeR, rangeG, rangeB;
@@ -55,6 +54,9 @@ public class ToonGrassPainter_URP : MonoBehaviour
     [HideInInspector] public Vector3 hitNormal;
     int[] indi;
 
+    public Action<Color> OnGrassCut;
+    public Color currentCutColor;
+
     public int verticesCount;
 
     private void Start()
@@ -66,7 +68,7 @@ public class ToonGrassPainter_URP : MonoBehaviour
     public void RemoveGrassAtPosition(Vector3 position, float removalRadius)
     {
         List<int> indicesToRemove = new List<int>();
-        
+
         for (int j = 0; j < positions.Count; j++)
         {
             Vector3 grassPosition = positions[j] + transform.position;
@@ -78,18 +80,17 @@ public class ToonGrassPainter_URP : MonoBehaviour
             }
         }
 
-        PlayerMove_URP.Instance.text.text = "Indices to remove: " + indicesToRemove.Count.ToString();
+        if (indicesToRemove.Count <= 0) return;
+        
+        // OnGrassCut?.Invoke(colors[0]);
 
-        if (indicesToRemove.Count <= 0)
-        {
-            return;
-        }
 
         // triangle index hatasi fix icin
         foreach (int indexToRemove in indicesToRemove.OrderByDescending(i => i))
         {
             positions.RemoveAt(indexToRemove);
             colors.RemoveAt(indexToRemove);
+            currentCutColor = colors[indexToRemove];
             normals.RemoveAt(indexToRemove);
             length.RemoveAt(indexToRemove);
         }
@@ -102,6 +103,10 @@ public class ToonGrassPainter_URP : MonoBehaviour
         }
 
         // Rebuild mesh, guncellenmis data ile
+        if (mesh != null)
+        {
+            Destroy(mesh);
+        }
         mesh = new Mesh();
         mesh.SetVertices(positions);
         indi = indicies.ToArray();
@@ -109,19 +114,16 @@ public class ToonGrassPainter_URP : MonoBehaviour
         mesh.SetUVs(0, length);
         mesh.SetColors(colors);
         mesh.SetNormals(normals);
-        
+
         //Meshi guncelledikten sonra
         PlayerMove_URP.Instance.currentMesh = mesh;
-        
+
         filter.mesh = mesh;
     }
-    
+
     public bool AreVerticesEqual(int vertices1, int vertices2)
     {
-        if (vertices1 != vertices2)
-            return false;
-
-        return true;
+        return vertices1 == vertices2;
     }
 
 #if UNITY_EDITOR
@@ -157,12 +159,7 @@ public class ToonGrassPainter_URP : MonoBehaviour
 
     void OnScene(SceneView scene)
     {
-        if (this == null)
-        {
-            return;
-        }
-
-        if ((Selection.Contains(gameObject)))
+        if (Selection.Contains(gameObject))
         {
             Event e = Event.current;
             RaycastHit terrainHit;
@@ -341,6 +338,11 @@ public class ToonGrassPainter_URP : MonoBehaviour
                 }
 
                 e.Use();
+            }
+
+            if (mesh != null)
+            {
+                DestroyImmediate(mesh);
             }
 
             mesh = new Mesh();
